@@ -794,7 +794,7 @@ async function parsePayment(){
   res.textContent='Parsing with AI…';res.className='aib tk';
   const banks=state.banks.map(b=>b.name+' ('+b.nick+')').join(', ')||'none';
   try{
-    const resp=await fetch('https://fintrack-proxy.harishsam-2243.workers.dev/',{method:'POST',
+    const resp=await fetch('https://fintrack-proxy.harishsam-2243.workers.dev',{method:'POST',
       headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,
         messages:[{role:'user',content:`Extract payment info from: "${txt}"\nAvailable banks: ${banks}\nReturn ONLY valid JSON (no markdown):\n{"name":"short description","amount":number,"category":"one of: Food & drinks/Transport/Shopping/Entertainment/Health/Bills & utilities/Groceries/Cash withdrawals/Bank charges/Gadgets & Subscriptions/Grooming/Income/Investments/Insurances/Rent/Cash backs & rewards/Deposit/Vehicle maintenance/Education/Divine/Other","method":"one of: UPI/Credit card/Debit card/Net banking/Cash/Wallet","bank_name":"closest bank match or empty string","notes":"extra info or empty string"}`}]})
@@ -1108,7 +1108,7 @@ async function generateSWOT(){
   const now=new Date();const mt=state.transactions.filter(t=>{const d=new Date(t.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
   const cs=sumByCat(mt),prev=getRange('month',1),pt=txnsIn(prev.start,prev.end).reduce((s,t)=>s+t.amt,0),ct=mt.reduce((s,t)=>s+t.amt,0),tb=Object.values(state.budgets).reduce((s,v)=>s+v,0);
   try{
-    const resp=await fetch('https://fintrack-proxy.harishsam-2243.workers.dev/',{method:'POST',
+    const resp=await fetch('https://fintrack-proxy.harishsam-2243.workers.dev',{method:'POST',
       headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:900,
         messages:[{role:'user',content:`Personal finance advisor. My data (INR):\nSpent this month: ₹${Math.round(ct)}\nSpent last month: ₹${Math.round(pt)}\nTotal budget: ₹${Math.round(tb)}\nCategories: ${JSON.stringify(Object.fromEntries(Object.entries(cs).map(([k,v])=>[k,Math.round(v)])))}\nBudgets: ${JSON.stringify(state.budgets)}\nPots: ${JSON.stringify(state.pots.map(p=>({name:p.name,cat:p.cat,balance:Math.round(p.balance),goal:Math.round(p.goal)})))}\n\nProvide SWOT (2-3 bullets each) + 3 actionable recommendations. Use **bold** headers. Reference actual numbers. Under 350 words.`}]})
